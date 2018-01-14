@@ -1,0 +1,25 @@
+# Dependencies
+markdown: redcarpet
+highlighter: pygments
+
+# Permalinks
+permalink: pretty
+#relative_permalinks: true
+
+# Setup
+title: Rai Node Deploy
+tagline: ''
+description: 'Easy to use tool for deploying your own RaiBlocks node on AWS.'
+url:
+baseurl: /
+
+paginate: 1
+
+# Cloudformation template version
+version: 1.0
+
+github:
+  repo: https://github.com/poole/hyde
+
+gems:
+  - jekyll-paginate
