@@ -3,28 +3,11 @@ layout: page
 title: About
 ---
 
-<p class="message">
-  Hey there! This page is included as an example. Feel free to customize it for your own use upon downloading. Carry on!
-</p>
+## Overview
 
-In the novel, *The Strange Case of Dr. Jeykll and Mr. Hyde*, Mr. Poole is Dr. Jekyll's virtuous and loyal butler. Similarly, Poole is an upstanding and effective butler that helps you build Jekyll themes. It's made by [@mdo](https://twitter.com/mdo).
+This site provides users a one-click interface for deploying and managing their very own node for the [RaiBlocks](https://github.com/clemahieu/raiblocks) cryptocurrency. The site was built with [Jekyll](http://jekyllrb.com) static site generator, and theme provided by [Mark Otto](https://github.com/mdo). The underlying technology is [Cloudformation](https://aws.amazon.com/cloudformation/) which deploys virtual servers (EC2 instances) to the AWS public cloud infrastructure and configures them as RaiBlocks nodes to contribute to the network.
 
-There are currently two themes built on Poole:
 
-* [Hyde](http://hyde.getpoole.com)
-* [Lanyon](http://lanyon.getpoole.com)
+## Disclaimer
 
-Learn more and contribute on [GitHub](https://github.com/poole).
-
-## Setup
-
-Some fun facts about the setup of this project include:
-
-* Built for [Jekyll](http://jekyllrb.com)
-* Developed on GitHub and hosted for free on [GitHub Pages](https://pages.github.com)
-* Coded with [Sublime Text 2](http://sublimetext.com), an amazing code editor
-* Designed and developed while listening to music like [Blood Bros Trilogy](https://soundcloud.com/maddecent/sets/blood-bros-series)
-
-Have questions or suggestions? Feel free to [open an issue on GitHub](https://github.com/poole/issues/new) or [ask me on Twitter](https://twitter.com/mdo).
-
-Thanks for reading!
+This site is free to use and browse, but **running servers on AWS will cost you money**. The author of the site is in no way responsible or liable for any costs incurred from the usage of this site. Management and security of the AWS account is the responsibility of the account owner.
