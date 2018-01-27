@@ -7,9 +7,9 @@ permalink: pretty
 #relative_permalinks: true
 
 # Setup
-title: Rai Node Deploy
+title: Monero Node Deploy
 tagline: ''
-description: 'Easy to use tool for deploying your own RaiBlocks node on AWS.'
+description: 'Easy to use tool for deploying your own Monero node on AWS.'
 url:
 baseurl: /
 
