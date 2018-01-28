@@ -3,7 +3,7 @@ layout: post
 title: Monero Node v1.0
 ---
 
-First launch of the Cloudformation template and accompanying site hosted on Cloudfront. Features of the template include:
+First launch of the Cloudformation template and accompanying site hosted on Cloudfront. This template deploys Monero v0.11.1.0, "Helium Hydra". Features of the template include:
 
 * Regional mapping for Amazon Linux AMI, supports us-east-1, us-east-2, us-west-1, us-west-2, ca-central-1, and eu-west-2
 * Open node security group (daemon and rpc exposed publicly)
