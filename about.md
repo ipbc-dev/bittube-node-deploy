@@ -5,7 +5,7 @@ title: About
 
 ## Overview
 
-This site provides users a one-click interface for deploying and managing their very own node for the [RaiBlocks](https://github.com/clemahieu/raiblocks) cryptocurrency. The site was built with [Jekyll](http://jekyllrb.com) static site generator, and theme provided by [Mark Otto](https://github.com/mdo). The underlying technology is [Cloudformation](https://aws.amazon.com/cloudformation/) which deploys virtual servers (EC2 instances) to the AWS public cloud infrastructure and configures them as RaiBlocks nodes to contribute to the network. All of the code is freely available to use on [Github](https://github.com/lalanza808/raiblocks-node-deploy).
+This site provides users a one-click interface for deploying a full node for the [Monero](https://github.com/monero-project/monero) cryptocurrency. The site was built with the [Jekyll](http://jekyllrb.com) static site generator, and theme created by [Mark Otto](https://github.com/mdo). The underlying technology is [Cloudformation](https://aws.amazon.com/cloudformation/) which deploys virtual servers (EC2 instances) to the AWS public cloud infrastructure and configures them as open Monero nodes to contribute to the network. All of the code is freely available to use on [Github](https://github.com/lalanza808/monero-node-deploy).
 
 
 ## Disclaimer

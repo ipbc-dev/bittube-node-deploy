@@ -1,0 +1,192 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Monero node deployment - github.com/lalanza808/monero-node-deploy
+Parameters:
+  TargetVPC:
+    Description: The VPC where resources will be launched.
+    Type: 'AWS::EC2::VPC::Id'
+  TargetVPCSubnet:
+    Description: The public subnet where the node will reside.
+    Type: 'AWS::EC2::Subnet::Id'
+  InstanceType:
+    Description: Web server instance type.
+    Type: String
+    Default: t2.small
+    AllowedValues:
+      - t2.micro
+      - t2.small
+      - t2.medium
+      - t2.large
+      - t2.xlarge
+      - t2.2xlarge
+      - m3.medium
+      - m3.large
+      - m3.xlarge
+      - m3.2xlarge
+      - m4.large
+      - m4.xlarge
+      - m4.2xlarge
+      - m4.4xlarge
+      - m4.10xlarge
+      - m4.16xlarge
+      - m5.large
+      - m5.xlarge
+      - m5.2xlarge
+      - m5.4xlarge
+      - m5.12xlarge
+      - m5.24xlarge
+    ConstraintDescription: Must be a valid EC2 instance type.
+  KeyPairName:
+    Description: SSH Key pair to be used by the web server instances.
+    Type: 'AWS::EC2::KeyPair::KeyName'
+  TrustedIPAddress:
+    Description: Trusted IP address for managing the server - your IP returned from v4.icanhazip.com
+    Type: String
+
+Mappings:
+  NodeAMI:
+      us-east-1:
+        "id": "ami-55ef662f"
+      us-east-2:
+        "id": "ami-15e9c770"
+      us-west-1:
+        "id": "ami-a51f27c5"
+      us-west-2:
+        "id": "ami-bf4193c7"
+      ca-central-1:
+        "id": "ami-d29e25b6"
+      eu-west-2:
+        "id": "ami-e7d6c983"
+
+Resources:
+
+  # Security Groups
+  OpenNodeSG:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupName: monero-open-node
+      VpcId: !Ref TargetVPC
+      GroupDescription: Enable inbound traffic for monero node specific communications.
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 18080
+          ToPort: 18080
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: udp
+          FromPort: 18081
+          ToPort: 18081
+          CidrIp: 0.0.0.0/0
+  PrivateAccessSG:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupName: monero-private-management
+      VpcId: !Ref TargetVPC
+      GroupDescription: Enable inbound management traffic to the instance.
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: !Sub '${TrustedIPAddress}/32'
+
+  # EC2
+  NodeInstance:
+    Type: "AWS::EC2::Instance"
+    Properties:
+      IamInstanceProfile: !Ref NodeInstanceProfile
+      ImageId: !FindInMap [NodeAMI, !Ref "AWS::Region", id]
+      InstanceType: !Ref InstanceType
+      BlockDeviceMappings:
+        - DeviceName: /dev/xvda
+          Ebs:
+            VolumeSize: 50
+            VolumeType: gp2
+      KeyName: !Ref KeyPairName
+      SecurityGroupIds:
+        - !Ref OpenNodeSG
+        - !Ref PrivateAccessSG
+      SubnetId: !Ref TargetVPCSubnet
+      Tags:
+        - Key: Name
+          Value: monero-public-node
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash -x
+          sleep 5
+          echo -e "[+] Downloading Monero daemon software and extracting to executable path."
+          wget -O monero.tar.bz2 https://github.com/monero-project/monero/releases/download/v0.11.1.0/monero-linux-x64-v0.11.1.0.tar.bz2
+          tar xvjf monero.tar.bz2 -C /usr/bin/ --strip-components=2
+          rm -f monero.tar.bz2
+
+          echo -e "[+] Setting up shell script to execute daemon with required settings."
+          echo 'monerod --rpc-bind-ip 0.0.0.0 --restricted-rpc --confirm-external-bind --log-file /var/log/monerod.log --detach' > /opt/monerod.sh
+          chmod +x /opt/monerod.sh
+
+          echo -e "[+] Adding script to rc file for execution on boot."
+          echo '/opt/monerod.sh' >> /etc/rc.d/rc.local
+
+          echo -e "[+] Starting monerod in daemon mode."
+          /opt/monerod.sh
+
+          echo -e "[+] Install awslogs package/service for shipping logs to Cloudwatch."
+          yum install awslogs -y
+          chkconfig awslogs on
+          cat << EOF > /etc/awslogs/awscli.conf
+          [plugins]
+          cwlogs = cwlogs
+          [default]
+          region = ${AWS::Region}
+          EOF
+          cat << EOF > /etc/awslogs/awslogs.conf
+          [general]
+          state_file = /var/lib/awslogs/agent-state
+          [/var/log/monerod.log]
+          file = /var/log/monerod.log
+          log_group_name = /var/log/monerod.log
+          log_stream_name = {instance_id}
+          EOF
+          service awslogs start
+
+
+
+
+  NodeInstanceProfile:
+    Type: "AWS::IAM::InstanceProfile"
+    Properties:
+      Roles:
+        - !Ref NodeInstanceRole
+
+  NodeInstanceRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: monero-public-node
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service:
+                - "ec2.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      Policies:
+        - PolicyName: "CloudwatchLogs"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action:
+                  - "logs:CreateLogGroup"
+                  - "logs:CreateLogStream"
+                  - "logs:PutLogEvents"
+                  - "logs:DescribeLogStreams"
+                Resource: "arn:aws:logs:*:*:*"
+
+  NodeEIP:
+    Type: "AWS::EC2::EIP"
+    Properties:
+      InstanceId: !Ref NodeInstance
+      Domain: vpc
+
+Outputs:
+  NodeIPAddress:
+    Description: The IP address of your new Monero node
+    Value: !Ref NodeEIP
